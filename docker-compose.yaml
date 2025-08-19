@@ -1,0 +1,45 @@
+version: "3.8"
+services:
+  frontend:
+    build: ./frontend
+    container_name: frontend-angular
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - intelli_net
+
+  backend:
+    build: ./backend
+    container_name: backend-dotnet
+    environment:
+      - DATA_DIR=/data
+      - ML_SERVICE_URL=http://ml-service:8000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - ml-service
+    networks:
+      - intelli_net
+
+  ml-service:
+    build: ./ml-service
+    container_name: ml-service-python
+    environment:
+      - DATA_DIR=/data
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+    networks:
+      - intelli_net
+
+volumes:
+  data:
+
+networks:
+  intelli_net:
+    driver: bridge
