@@ -1,62 +1,97 @@
+# main.py
+import os
+import json
+import time
+import pandas as pd
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-import pandas as pd
-import os, io, time, json
-from trainer import train_and_eval, load_model, predict_row
-from datetime import datetime
+from trainer import train, ensure_timestamp
+import joblib
 
 app = FastAPI()
-DATA_PATH = os.environ.get("DATA_DIR", "/data")
-PROCESSED_CSV = os.path.join(DATA_PATH, "processed.csv")
-MODEL_PATH = os.path.join("models", "model.joblib")
+DATA_PATH = os.environ.get("DATA_PATH", "/app/data/upload.csv")
+MODEL_PATH = os.environ.get("MODEL_PATH", "/app/data/model.joblib")
 
-@app.post("/train")
-async def train_endpoint(payload: dict):
-    # expected payload keys: trainStart, trainEnd, testStart, testEnd
-    if not os.path.exists(PROCESSED_CSV):
-        raise HTTPException(400, "Processed dataset not found on ML service.")
-    metrics = train_and_eval(PROCESSED_CSV, payload)
-    return JSONResponse(content=metrics)
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
-def sse_event(data: dict):
-    return f"data: {json.dumps(data)}\n\n"
+@app.post("/train-model")
+async def train_model(req: Request):
+    """
+    Expects JSON:
+    {
+      "trainStart": "2021-01-01T00:00:00",
+      "trainEnd":   "...",
+      "testStart":  "...",
+      "testEnd":    "..."
+    }
+    """
+    payload = await req.json()
+    for key in ("trainStart", "trainEnd", "testStart", "testEnd"):
+        if key not in payload:
+            raise HTTPException(status_code=400, detail=f"{key} required")
+    if not os.path.exists(DATA_PATH):
+        raise HTTPException(status_code=400, detail="Dataset not found on server")
+    df = pd.read_csv(DATA_PATH)
+    try:
+        result = train(df, payload["trainStart"], payload["trainEnd"], payload["testStart"], payload["testEnd"], model_path=MODEL_PATH)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return JSONResponse(result)
 
 @app.get("/simulate")
-async def simulate(simStart: str, simEnd: str):
-    if not os.path.exists(PROCESSED_CSV):
-        raise HTTPException(400, "Processed dataset not found.")
-    df = pd.read_csv(PROCESSED_CSV, parse_dates=['synthetic_timestamp'])
-    mask = (df['synthetic_timestamp'] >= simStart) & (df['synthetic_timestamp'] <= simEnd)
-    df_slice = df.loc[mask].sort_values('synthetic_timestamp').reset_index(drop=True)
-    model = load_model(MODEL_PATH)
-    total = len(df_slice)
-    pass_count = 0
-    fail_count = 0
-    conf_sum = 0.0
+async def simulate(start: str, end: str):
+    """
+    Streams Server-Sent Events (SSE). Query params: start, end (ISO timestamps)
+    """
+    if not os.path.exists(DATA_PATH):
+        raise HTTPException(status_code=400, detail="Dataset not found")
+    if not os.path.exists(MODEL_PATH):
+        raise HTTPException(status_code=400, detail="Trained model not found; run /train-model first")
 
-    def generator():
-        nonlocal pass_count, fail_count, conf_sum
-        for idx, row in df_slice.iterrows():
-            # predict
-            pred, conf = predict_row(model, row)
-            # create simple sensor proxies (if real columns missing)
-            temperature = float(row.get('S1', 20.0)) % 100
-            pressure = float(row.get('S2', 1000.0)) % 1200
-            humidity = float(row.get('S3', 50.0)) % 100
-            rec = {
+    df = pd.read_csv(DATA_PATH)
+    df = ensure_timestamp(df)
+    df['synthetic_timestamp'] = pd.to_datetime(df['synthetic_timestamp'])
+    mask = (df['synthetic_timestamp'] >= pd.to_datetime(start)) & (df['synthetic_timestamp'] <= pd.to_datetime(end))
+    subset = df[mask].copy()
+    if subset.empty:
+        raise HTTPException(status_code=400, detail="No rows in simulation window")
+
+    # load model
+    model = joblib.load(MODEL_PATH)
+    numeric_cols = subset.select_dtypes(include=['number']).columns.tolist()
+    # ensure Response not used as input
+    if 'Response' in numeric_cols:
+        numeric_cols.remove('Response')
+
+    def gen():
+        for _, row in subset.iterrows():
+            X = row[numeric_cols].to_frame().T.fillna(0)
+            try:
+                if hasattr(model, "predict_proba"):
+                    proba = float(model.predict_proba(X)[:, 1][0])
+                    pred = int(proba >= 0.5)
+                else:
+                    # lightgbm booster
+                    proba = float(model.predict(X)[0])
+                    pred = int(proba >= 0.5)
+            except Exception:
+                proba = 0.0
+                pred = 0
+            out = {
                 "timestamp": str(row['synthetic_timestamp']),
-                "sampleId": int(row.get('Id', idx)),
-                "prediction": "Pass" if pred==1 else "Fail",
-                "confidence": round(float(conf), 3),
-                "temperature": round(float(temperature),2),
-                "pressure": round(float(pressure),2),
-                "humidity": round(float(humidity),2)
+                "id": int(row.get('ID', _)),
+                "prediction": pred,
+                "confidence": proba
             }
-            if pred==1: pass_count += 1
-            else: fail_count += 1
-            conf_sum += float(conf)
-            yield sse_event(rec)
-            time.sleep(1)  # emit one row per second
-        yield sse_event({"summary": {"total": total, "pass": pass_count, "fail": fail_count,
-                                     "avg_confidence": round(conf_sum/max(1,total),3)}})
-    return StreamingResponse(generator(), media_type="text/event-stream")
+            # copy a few named sensors if present
+            for field in ("Temperature","Pressure","Humidity"):
+                if field in row:
+                    try:
+                        out[field.lower()] = float(row[field])
+                    except Exception:
+                        out[field.lower()] = None
+            yield f"data: {json.dumps(out)}\n\n"
+            time.sleep(1)
+    return StreamingResponse(gen(), media_type="text/event-stream")

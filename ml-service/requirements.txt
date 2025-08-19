@@ -1,8 +1,9 @@
 fastapi
 uvicorn[standard]
 pandas
+numpy
 scikit-learn
-lightgbm
 matplotlib
 joblib
-python-dateutil
+python-multipart
+lightgbm
