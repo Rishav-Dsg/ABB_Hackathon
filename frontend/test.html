@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="abbApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - ABB MiniML AngularJS</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-resource.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8" ng-controller="TestController">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">ABB MiniML AngularJS Conversion Test</h1>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Results</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center p-4 bg-green-100 rounded-lg">
+                    <i class="fas fa-check-circle text-green-600 text-2xl mb-2"></i>
+                    <p class="font-medium">AngularJS Loaded</p>
+                    <p class="text-sm text-gray-600">{{ angularVersion }}</p>
+                </div>
+                <div class="text-center p-4 bg-blue-100 rounded-lg">
+                    <i class="fas fa-palette text-blue-600 text-2xl mb-2"></i>
+                    <p class="font-medium">Tailwind CSS</p>
+                    <p class="text-sm text-gray-600">Loaded Successfully</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Navigation Test</h2>
+            <div class="flex space-x-4">
+                <button ng-click="setStep(1)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Step 1: Upload
+                </button>
+                <button ng-click="setStep(2)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Step 2: Date Range
+                </button>
+                <button ng-click="setStep(3)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Step 3: Training
+                </button>
+                <button ng-click="setStep(4)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Step 4: Simulation
+                </button>
+            </div>
+            <p class="mt-4 text-gray-600">Current Step: {{ currentStep }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Component Test</h2>
+            <div ng-include="'components/upload-dataset.html'" ng-if="currentStep === 1"></div>
+            <div ng-include="'components/date-range-selection.html'" ng-if="currentStep === 2"></div>
+            <div ng-include="'components/model-training-dashboard.html'" ng-if="currentStep === 3"></div>
+            <div ng-include="'components/real-time-simulation.html'" ng-if="currentStep === 4"></div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/controllers/main-controller.js"></script>
+    <script src="js/controllers/upload-dataset-controller.js"></script>
+    <script src="js/controllers/date-range-controller.js"></script>
+    <script src="js/controllers/model-training-controller.js"></script>
+    <script src="js/controllers/real-time-simulation-controller.js"></script>
+    <script src="js/services/api-service.js"></script>
+    
+    <script>
+        app.controller('TestController', function($scope) {
+            $scope.currentStep = 1;
+            $scope.angularVersion = angular.version.full;
+            
+            $scope.setStep = function(step) {
+                $scope.currentStep = step;
+            };
+        });
+    </script>
+</body>
+</html>

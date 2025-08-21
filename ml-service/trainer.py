@@ -5,7 +5,7 @@ import base64
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
 import joblib
 import matplotlib.pyplot as plt
 
@@ -116,11 +116,17 @@ def train(df: pd.DataFrame, train_start: str, train_end: str, test_start: str, t
     plt.title("Confusion breakdown")
     conf_plot = _plot_to_base64(fig2)
 
+    try:
+        auc = float(roc_auc_score(y_test, preds_proba))
+    except Exception:
+        auc = 0.0
+
     result = {
         "accuracy": acc,
         "precision": prec,
         "recall": rec,
-        "f1": f1,
+        "f1Score": f1,
+        "aucScore": auc,
         "tp": tp, "tn": tn, "fp": fp, "fn": fn,
         "acc_plot": acc_plot,
         "conf_plot": conf_plot,

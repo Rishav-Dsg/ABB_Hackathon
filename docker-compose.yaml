@@ -1,25 +1,24 @@
-version: "3.8"
 services:
   frontend:
     build: ./frontend
-    container_name: frontend-angular
     ports:
-      - "8080:80"
+      - "4200:80"
     depends_on:
       - backend
-    networks:
-      - intelli_net
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: backend-dotnet
     environment:
       - DATA_DIR=/data
       - ML_SERVICE_URL=http://ml-service:8000
+      - ASPNETCORE_URLS=http://0.0.0.0:5000
     ports:
       - "5000:5000"
     volumes:
-      - ./data:/data
+      - ./data:/app/data
     depends_on:
       - ml-service
     networks:
@@ -33,12 +32,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./data:/data
+      - ./data:/app/data
     networks:
       - intelli_net
-
-volumes:
-  data:
 
 networks:
   intelli_net:

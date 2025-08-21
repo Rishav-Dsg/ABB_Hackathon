@@ -1,0 +1,50 @@
+<div class="max-w-6xl mx-auto space-y-6" ng-controller="DateRangeController">
+    <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-900">Select Date Ranges</h2>
+        <div class="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Step 2 of 4</div>
+    </div>
+    
+    <div class="p-6 space-y-4 bg-white rounded-lg border">
+        <div class="grid md:grid-cols-3 gap-4">
+            <div class="space-y-2">
+                <div class="text-sm font-medium">Training Start</div>
+                <input class="border rounded px-3 py-2 w-full" type="date" ng-model="training.startDate" />
+            </div>
+            <div class="space-y-2">
+                <div class="text-sm font-medium">Training End</div>
+                <input class="border rounded px-3 py-2 w-full" type="date" ng-model="training.endDate" />
+            </div>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-4">
+            <div class="space-y-2">
+                <div class="text-sm font-medium">Testing Start</div>
+                <input class="border rounded px-3 py-2 w-full" type="date" ng-model="testing.startDate" />
+            </div>
+            <div class="space-y-2">
+                <div class="text-sm font-medium">Testing End</div>
+                <input class="border rounded px-3 py-2 w-full" type="date" ng-model="testing.endDate" />
+            </div>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-4">
+            <div class="space-y-2">
+                <div class="text-sm font-medium">Simulation Start</div>
+                <input class="border rounded px-3 py-2 w-full" type="date" ng-model="simulation.startDate" />
+            </div>
+            <div class="space-y-2">
+                <div class="text-sm font-medium">Simulation End</div>
+                <input class="border rounded px-3 py-2 w-full" type="date" ng-model="simulation.endDate" />
+            </div>
+        </div>
+    </div>
+    
+    <div class="flex justify-end gap-3">
+        <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" ng-click="previousStep()">Previous</button>
+        <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" ng-click="validate()" ng-disabled="busy">
+            {{ busy ? 'Validating...' : 'Validate' }}
+        </button>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" 
+                ng-click="nextStep()" ng-disabled="!ok">Next</button>
+    </div>
+</div>

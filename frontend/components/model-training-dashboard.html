@@ -1,0 +1,26 @@
+<div class="max-w-6xl mx-auto space-y-6" ng-controller="ModelTrainingController">
+    <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-900">Model Training</h2>
+        <div class="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Step 3 of 4</div>
+    </div>
+    
+    <div class="p-6 space-y-4 bg-white rounded-lg border">
+        <button ng-click="train()" ng-disabled="busy" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ busy ? 'Training...' : 'Train Model' }}
+        </button>
+        
+        <div ng-if="trained && metrics" class="grid md:grid-cols-3 gap-4">
+            <div class="p-4 border rounded">Accuracy: {{ metrics.accuracy.toFixed(3) }}</div>
+            <div class="p-4 border rounded">Precision: {{ metrics.precision.toFixed(3) }}</div>
+            <div class="p-4 border rounded">Recall: {{ metrics.recall.toFixed(3) }}</div>
+            <div class="p-4 border rounded">F1: {{ metrics.f1Score.toFixed(3) }}</div>
+            <div class="p-4 border rounded">AUC: {{ metrics.aucScore.toFixed(3) }}</div>
+        </div>
+    </div>
+    
+    <div class="flex justify-end gap-3">
+        <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" ng-click="previousStep()">Previous</button>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" 
+                ng-click="nextStep()" ng-disabled="!trained">Next</button>
+    </div>
+</div>

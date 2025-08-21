@@ -1,0 +1,26 @@
+{
+  "name": "abb-frontend-angularjs",
+  "version": "1.0.0",
+  "description": "ABB MiniML Frontend - AngularJS Version",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8080",
+    "dev": "python -m http.server 8080",
+    "build": "echo 'No build step needed for AngularJS'",
+    "serve": "python -m http.server 8080"
+  },
+  "keywords": [
+    "angularjs",
+    "machine-learning",
+    "quality-control",
+    "abb",
+    "miniml"
+  ],
+  "author": "ABB Team",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

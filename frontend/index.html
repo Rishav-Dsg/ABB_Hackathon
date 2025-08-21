@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="abbApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniML - Predictive Quality Control</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-route.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-resource.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles/globals.css" rel="stylesheet">
+</head>
+<body class="font-sans antialiased" ng-controller="MainController">
+    <div class="min-h-screen flex flex-col bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="bg-pink-200 px-4 py-2 rounded-lg">
+                        <h1 class="text-lg font-semibold text-gray-800">MiniML - Predictive Quality Control</h1>
+                        <p class="text-sm text-gray-600">Simplified Frontend</p>
+                    </div>
+                </div>
+                <div class="text-red-600 font-bold text-2xl">ABB</div>
+            </div>
+        </header>
+
+        <!-- Navigation Stepper -->
+        <nav class="bg-white border-b border-gray-200 px-6 py-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2" ng-repeat="step in steps" ng-click="setCurrentStep($index + 1)">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors"
+                             ng-class="{
+                                 'bg-blue-600 text-white': currentStep >= $index + 1,
+                                 'bg-gray-200 text-gray-600': currentStep < $index + 1
+                             }">
+                            {{ $index + 1 }}
+                        </div>
+                        <span class="text-sm font-medium text-gray-700 cursor-pointer"
+                              ng-class="{
+                                  'text-blue-600': currentStep >= $index + 1,
+                                  'text-gray-500': currentStep < $index + 1
+                              }">
+                            {{ step }}
+                        </span>
+                        <div class="w-16 h-0.5 bg-gray-300" ng-if="$index < steps.length - 1"></div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Step 1: Upload Dataset -->
+            <div ng-if="currentStep === 1" ng-include="'components/upload-dataset.html'"></div>
+            
+            <!-- Step 2: Date Range Selection -->
+            <div ng-if="currentStep === 2" ng-include="'components/date-range-selection.html'"></div>
+            
+            <!-- Step 3: Model Training Dashboard -->
+            <div ng-if="currentStep === 3" ng-include="'components/model-training-dashboard.html'"></div>
+            
+            <!-- Step 4: Real Time Simulation -->
+            <div ng-if="currentStep === 4" ng-include="'components/real-time-simulation.html'"></div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 px-6 py-4">
+            <div class="max-w-6xl mx-auto text-center text-gray-600">
+                <p>&copy; 2024 ABB MiniML. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/controllers/main-controller.js"></script>
+    <script src="js/controllers/upload-dataset-controller.js"></script>
+    <script src="js/controllers/date-range-controller.js"></script>
+    <script src="js/controllers/model-training-controller.js"></script>
+    <script src="js/controllers/real-time-simulation-controller.js"></script>
+    <script src="js/services/api-service.js"></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<div class="max-w-6xl mx-auto space-y-6" ng-controller="RealTimeSimulationController">
+    <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-900">Real-Time Prediction Simulation</h2>
+        <div class="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Step 4 of 4</div>
+    </div>
+
+    <div ng-if="!simulationStarted" class="flex flex-col items-center justify-center py-20">
+        <div class="text-center mb-8">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Ready to Start Simulation</h3>
+            <p class="text-gray-600">Click to begin real-time simulation</p>
+        </div>
+        <button ng-click="startSimulation()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg">
+            Start Simulation
+        </button>
+        <div class="mt-8">
+            <button ng-click="previousStep()" class="px-6 py-2 bg-transparent border border-gray-300 rounded-lg hover:bg-gray-50">
+                Previous
+            </button>
+        </div>
+    </div>
+
+    <div ng-if="simulationStarted">
+        <div class="flex justify-center gap-4 mb-6">
+            <button ng-click="startSimulation()" ng-disabled="isSimulating" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ isSimulating ? 'Running...' : 'Run Again' }}
+            </button>
+        </div>
+
+        <div class="flex justify-center mb-4">
+            <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm">Simulation Ready</span>
+        </div>
+
+        <div class="text-center text-sm text-gray-600 mb-6">Click "Run Again" to refresh</div>
+
+        <div>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Real-Time Quality Predictions</h3>
+            <div class="p-6 bg-white rounded-lg border">
+                <div class="h-64 flex items-center justify-center text-gray-500">
+                    <div class="text-center">
+                        <i class="fas fa-chart-line text-4xl mb-2"></i>
+                        <p>Chart visualization would be here</p>
+                        <p class="text-sm">(Using Chart.js or similar library)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Prediction Confidence</h3>
+                <div class="p-6 bg-white rounded-lg border">
+                    <div class="flex items-center justify-center">
+                        <div class="w-48 h-48 flex items-center justify-center text-gray-500">
+                            <div class="text-center">
+                                <i class="fas fa-chart-pie text-4xl mb-2"></i>
+                                <p>Pie chart would be here</p>
+                                <p class="text-sm">(Using Chart.js or similar library)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Live Statistics</h3>
+                <div class="p-6 bg-white rounded-lg border">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-gray-900">{{ liveStats.total }}</div>
+                            <div class="text-sm text-gray-600 mt-1">Total</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-green-600">{{ liveStats.passed }}</div>
+                            <div class="text-sm text-gray-600 mt-1">Passed</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-red-600">{{ liveStats.failed }}</div>
+                            <div class="text-sm text-gray-600 mt-1">Failed</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-600">{{ liveStats.accuracy }}%</div>
+                            <div class="text-sm text-gray-600 mt-1">Accuracy</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Live Prediction Stream</h3>
+            <div class="p-6 bg-white rounded-lg border">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-2 px-3 font-medium text-gray-900">TIME</th>
+                                <th class="text-left py-2 px-3 font-medium text-gray-900">SAMPLE ID</th>
+                                <th class="text-left py-2 px-3 font-medium text-gray-900">PREDICTION</th>
+                                <th class="text-left py-2 px-3 font-medium text-gray-900">CONFIDENCE</th>
+                                <th class="text-left py-2 px-3 font-medium text-gray-900">TEMPERATURE</th>
+                                <th class="text-left py-2 px-3 font-medium text-gray-900">PRESSURE</th>
+                                <th class="text-left py-2 px-3 font-medium text-gray-900">HUMIDITY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="row in predictionStream" class="border-b border-gray-100">
+                                <td class="py-2 px-3 text-gray-700">{{ row.timestamp }}</td>
+                                <td class="py-2 px-3 text-gray-700">{{ row.id }}</td>
+                                <td class="py-2 px-3">
+                                    <span class="px-2 py-1 rounded-full text-xs" 
+                                          ng-class="row.prediction === 'Pass' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                        {{ row.prediction }}
+                                    </span>
+                                </td>
+                                <td class="py-2 px-3 text-gray-700">{{ Math.round(row.confidence) }}%</td>
+                                <td class="py-2 px-3 text-gray-700">{{ row.temperature.toFixed(1) }}°C</td>
+                                <td class="py-2 px-3 text-gray-700">{{ Math.round(row.pressure) }} hPa</td>
+                                <td class="py-2 px-3 text-gray-700">{{ Math.round(row.humidity) }}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-start">
+            <button ng-click="previousStep()" class="px-6 py-2 bg-transparent border border-gray-300 rounded-lg hover:bg-gray-50">Previous</button>
+        </div>
+    </div>
+</div>
